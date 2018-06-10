@@ -1,6 +1,6 @@
 /*
- *Create a list of students with different properties
- *Date: September 27, 2017
+ *Hash Table
+ *Date: June 5, 2018
  *Created by: Ethan Reese
  */
 #include <iostream>
@@ -16,6 +16,7 @@ struct Student{
     char lastName[20];
     int id;
     double gpa;
+    student* next;
 };
 
 int addStudent(vector<Student*> &students);
@@ -62,20 +63,6 @@ int main(){
         }
     }
 }
-//Method to add a student to the full set
-int addStudent(vector<Student*> &students){
-    cout << "Enter first name: ";
-    Student *student = new Student();
-    cin >> student->firstName;
-    cout << "Enter the last name: ";
-    cin >> student->lastName;
-    cout << "Enter the student's id number: ";
-    cin >> student->id;
-    cout << "Enter the student's gpa: ";
-    cin >> student->gpa;
-    students.push_back(student);
-    return 0;
-}
 //Function to make char arrays to lower case
 void toLowerCase(char (&arr)[7]){
     for(int i = 0; i < 7; i++){
@@ -104,4 +91,65 @@ void deleteStudents(vector<Student*> &students, int id){
 			students.erase(students.begin() + i);
 		}
 	}
+}
+
+//Hash function
+int hash(int id, int length){
+     return id%length;
+}
+//Search Method
+Student* search(int id, int length, Student** list){
+     Student* s = list[hash(id)];
+     
+     //Loop through the chain and 
+     while(s != NULL && s->id != id){
+          s = s->next;
+     }
+
+     return s;
+}
+//Add Student Method
+void addStudent(student *s, Student** &list, int &length){
+     int index = hash(s->id);
+     int collisions = 0;
+     //If a student with the same id is already input
+     if(list[index]->id = id){
+          cout << "That student id is already assigned!" << endl;
+          return;
+     }
+     //There is an open slot in the table that a student can go into end of story
+     if(list[index] == NULL){
+          list[index] = s;
+          return;
+     }
+
+     collisions++;
+     //Find the student at the head of the chain
+     Student* c = list[index];
+     //Find a slot for the new student to fit into the chain
+     while(c->next != NULL){
+          collisions++;
+          c = c->next;
+     }
+     c->next = s;
+     
+     //If the number of collisions exceeds the given max then the table size needs to be doubled
+     if(collisions > 3){
+          Student** oldTable = list;
+          length *= 2;
+          list = new Student*[length];
+          //Loop through table and rehash all values
+          for(int i = 0; i < length; i++){
+               student* add  = oldTable[i];
+               
+               //If there is a student or a chain loop through and add
+               while(add != NULL){
+                    student* student = add;
+                    add = add->next;
+                    student->next = NULL;
+                    addStudent(student, list, length);
+               }
+          }
+          delete oldTable [];
+     }
 }
