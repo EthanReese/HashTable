@@ -8,6 +8,8 @@
 #include <cstring>
 #include <vector>
 #include <iomanip>
+#include <ctime>
+#include <fstream>
 
 using namespace std;
 //Make a struct that stores the information about the student
@@ -16,26 +18,51 @@ struct Student{
     char lastName[20];
     int id;
     double gpa;
-    student* next;
+    Student* next;
 };
 
-int addStudent(vector<Student*> &students);
 void toLowerCase(char (&arr)[7]);
-void printStudents(vector<Student*> &students);
-void deleteStudents(vector<Student*> &students, int id);
-
+void printStudents(int length, Student** list);
+void deleteStudents(int id, Student** &list, int &length);
+void addStudent(Student *s, Student** &list, int &length);
+Student* search(int id, int length, Student** list);
+int hashf(int, int);
 
 int main(){
-    //Make an infinite loop that continues until the user quits
-    vector<Student*> students;
+     //Read in the files that are nessecary for random generation
+     char firstNames[100][20];
+     char lastNames[100][20];
+
+     srand(time(NULL));
+
+     ifstream firstf ("firstnames.txt"), lastf("lastnames.txt");
+     if(firstf.is_open() && lastf.is_open()){
+          int name = 0;
+          while(name++ < 100){
+               firstf >> firstNames[name];
+               lastf >> lastNames[name];
+          }
+
+          firstf.close();
+          lastf.close();
+     }
+     else{
+          cout << "There is a major problem" << endl;
+          return 1;
+     }
+     int length = 100;
+    Student** list;
+    list = new Student*[length];
+     //Make an infinite loop that continues until the user quits
     while(true){
-        cout << "Please enter one of the command words: Add, Print, Delete, or Quit: ";
+        cout << "Please enter one of the command words: Add, Print, Random, Delete, or Quit: ";
       char input[7];
         //Define character arrays with the command words
         char add[7] = "add";
         char print[7] = "print";
         char del[7] = "delete";
         char quit[7] = "quit";
+        char random[7] = "random";
         
         //Create the vector to store the students in 
       
@@ -43,17 +70,56 @@ int main(){
 	toLowerCase(input);
         //If the input is an add then it needs to run that function
         if(strcmp(input, add) == 0){
-            addStudent(students);
+            //Get the requred information about the student
+            Student* student = new struct Student();
+            student->next = NULL;
+            cout << "Enter the first name: ";
+            cin >> student->firstName;
+            cout << "Enter the last name: ";
+            cin >> student->lastName;
+            cout << "Enter the student's id number: ";
+            cin >> student->id;
+            cout << "Enter the student's gpa: ";
+            cin >> student->gpa;
+            addStudent(student, list, length);
         }
         else if(strcmp(input, print) == 0){
-		printStudents(students);
+		     printStudents(length, list);
         }
         else if(strcmp(input, del) == 0){
 		cout << "Enter the id of the student you would like to delete: ";
 		int input;
 		cin >> input;
 
-		deleteStudents(students, input);
+		deleteStudents(input, list, length);
+        }
+        //Generate a list of random students
+        else if(strcmp(input, random) == 0){
+               int quota;
+               cout << "How many random students would you like to create? ";
+               cin >> quota;
+               while(quota != 0){
+                    //Make a student with random names and gpa
+                    Student* student = new Student();
+                    student->next = NULL;
+                    
+                    strcpy(student->firstName, firstNames[rand()%100]);
+                    strcpy(student->lastName, lastNames[rand()%100]);
+
+                    student->gpa = (double)(rand()%500)/100;
+
+                    //Find an availiable number for the id
+                    int id = 0;
+                    while(search(id, length, list) != NULL){
+                         id++;
+                    }
+
+                    student->id = id;
+
+                    addStudent(student, list, length);
+
+                    quota--;
+               }
         }
         else if(strcmp(input, quit) == 0){
             return 0;
@@ -69,12 +135,9 @@ void toLowerCase(char (&arr)[7]){
         arr[i] = tolower(arr[i]);
     }
 }
-//Function to print out all the students
-void printStudents(vector<Student*> &students){
-}
 //Function to delete a students from the list
 void deleteStudents(int id, Student** &list, int &length){
-     Student* s = list[hash(id)];
+     Student* s = list[hashf(id, length)];
 
      //If there is nothing at the proper index of the table
      if(s == NULL){
@@ -84,7 +147,7 @@ void deleteStudents(int id, Student** &list, int &length){
 
      //If its the first element in the chain then it just needs to get deleted and its next moved up
      if(id == s->id){
-          list[hash(id)] = s->next;
+          list[hashf(id, length)] = s->next;
           delete s;
           return;
      }
@@ -102,40 +165,41 @@ void deleteStudents(int id, Student** &list, int &length){
      }
      cout << "The element is missing from the table" << endl;
 }
-
 //Hash function
-int hash(int id, int length){
+int hashf(int id, int length){
      return id%length;
 }
 //Search Method
 Student* search(int id, int length, Student** list){
-     Student* s = list[hash(id)];
-     
-     //Loop through the chain and 
-     while(s != NULL && s->id != id){
-          s = s->next;
+     Student* s = list[hashf(id, length)];
+     if(s != NULL){        
+             //Loop through the chain and 
+             int num = s->id;
+             while(s != NULL && s->id != id){
+                  s = s->next;
+             }
      }
 
      return s;
 }
 //Add Student Method
-void addStudent(student *s, Student** &list, int &length){
-     int index = hash(s->id);
+void addStudent(Student *s, Student** &list, int &length){
+     int index = hashf(s->id, length);
      int collisions = 0;
-     //If a student with the same id is already input
-     if(list[index]->id = id){
-          cout << "That student id is already assigned!" << endl;
-          return;
-     }
+     //Find the student at the head of the chain
+     Student* c = list[index];
      //There is an open slot in the table that a student can go into end of story
-     if(list[index] == NULL){
+     if(c == NULL){
           list[index] = s;
           return;
      }
 
+     //If a student with the same id is already input
+     if(list[index]->id == s->id){
+          cout << "That student id is already assigned!" << endl;
+          return;
+     }
      collisions++;
-     //Find the student at the head of the chain
-     Student* c = list[index];
      //Find a slot for the new student to fit into the chain
      while(c->next != NULL){
           collisions++;
@@ -150,16 +214,31 @@ void addStudent(student *s, Student** &list, int &length){
           list = new Student*[length];
           //Loop through table and rehash all values
           for(int i = 0; i < length; i++){
-               student* add  = oldTable[i];
+               Student* add  = oldTable[i];
                
                //If there is a student or a chain loop through and add
                while(add != NULL){
-                    student* student = add;
+                    Student* student = add;
                     add = add->next;
                     student->next = NULL;
                     addStudent(student, list, length);
                }
           }
-          delete oldTable [];
+          delete oldTable;
      }
+}
+//Print out the students
+void printStudents(int length, Student** list){
+    for(int i = 0; i < length; i++){
+          Student* s = list[i];
+          
+          //Go through the chain
+          while(s != NULL){
+               cout << endl;
+               cout << s->firstName << " " << s->lastName << endl;
+               cout << s->id << endl;
+               cout << s->gpa << endl;
+               s = s->next;
+          }
+    }
 }
