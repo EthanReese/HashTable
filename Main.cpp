@@ -71,26 +71,36 @@ void toLowerCase(char (&arr)[7]){
 }
 //Function to print out all the students
 void printStudents(vector<Student*> &students){
-	//Loop through the vector and print out all the student
-	for(vector<Student*>::size_type i = 0; i != students.size(); i++){
-		cout << students.at(i)->firstName << " " << students.at(i)->lastName;
-		cout << ", "<< students.at(i)->id << ", ";
-		cout.setf(ios::fixed);	
-		cout << fixed << setprecision(2) << students.at(i)->gpa << endl;
-
-	}
-
 }
 //Function to delete a students from the list
-void deleteStudents(vector<Student*> &students, int id){
-	//Loop through the vector and find if its the right id number
-	for(int i = 0; i < students.size(); i++){
-		//If the student's id is the student you want to delete then delete it
-		if(students.at(i)->id == id){
-			delete students.at(i);
-			students.erase(students.begin() + i);
-		}
-	}
+void deleteStudents(int id, Student** &list, int &length){
+     Student* s = list[hash(id)];
+
+     //If there is nothing at the proper index of the table
+     if(s == NULL){
+             cout << "The element is missing from the table" << endl;
+             return;
+     }
+
+     //If its the first element in the chain then it just needs to get deleted and its next moved up
+     if(id == s->id){
+          list[hash(id)] = s->next;
+          delete s;
+          return;
+     }
+     //Loop through the chain until it finds the right id
+     while(s->next != NULL){
+             //If the student has the right id then it needs to go ahead and delete it.
+             if(s->next->id == id){
+                    Student* d = s->next;
+                    s->next = d->next;
+                    delete d;
+                    return;
+             }
+
+             s = s->next;
+     }
+     cout << "The element is missing from the table" << endl;
 }
 
 //Hash function
