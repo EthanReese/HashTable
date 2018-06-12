@@ -191,11 +191,9 @@ int addStudent(Student *s, Student** &list, int &length){
      int collisions = 0;
      //Find the student at the head of the chain
      Student* c = list[index];
-     cout << s->id << endl;
      //There is an open slot in the table that a student can go into end of story
      if(list[index] == NULL){
           list[index] = s;
-          cout << "Here" << endl;
           return 0;
      }
      //If a student with the same id is already input
