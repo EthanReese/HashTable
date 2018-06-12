@@ -24,7 +24,7 @@ struct Student{
 void toLowerCase(char (&arr)[7]);
 void printStudents(int length, Student** list);
 void deleteStudents(int id, Student** &list, int &length);
-void addStudent(Student *s, Student** &list, int &length);
+int addStudent(Student *s, Student** &list, int &length);
 Student* search(int id, int length, Student** list);
 int hashf(int, int);
 
@@ -53,6 +53,9 @@ int main(){
      int length = 100;
     Student** list;
     list = new Student*[length];
+    for(int i = 0; i < length; i++){
+          list[i] = NULL;
+    }
      //Make an infinite loop that continues until the user quits
     while(true){
         cout << "Please enter one of the command words: Add, Print, Random, Delete, or Quit: ";
@@ -71,7 +74,7 @@ int main(){
         //If the input is an add then it needs to run that function
         if(strcmp(input, add) == 0){
             //Get the requred information about the student
-            Student* student = new struct Student();
+            Student* student = new Student();
             student->next = NULL;
             cout << "Enter the first name: ";
             cin >> student->firstName;
@@ -183,21 +186,22 @@ Student* search(int id, int length, Student** list){
      return s;
 }
 //Add Student Method
-void addStudent(Student *s, Student** &list, int &length){
+int addStudent(Student *s, Student** &list, int &length){
      int index = hashf(s->id, length);
      int collisions = 0;
      //Find the student at the head of the chain
      Student* c = list[index];
+     cout << s->id << endl;
      //There is an open slot in the table that a student can go into end of story
-     if(c == NULL){
+     if(list[index] == NULL){
           list[index] = s;
-          return;
+          cout << "Here" << endl;
+          return 0;
      }
-
      //If a student with the same id is already input
-     if(list[index]->id == s->id){
+     else if(list[index]->id == s->id){
           cout << "That student id is already assigned!" << endl;
-          return;
+          return 1;
      }
      collisions++;
      //Find a slot for the new student to fit into the chain
@@ -212,6 +216,9 @@ void addStudent(Student *s, Student** &list, int &length){
           Student** oldTable = list;
           length *= 2;
           list = new Student*[length];
+          for(int i = 0; i < length; i++){
+               list[i] = NULL;
+          }
           //Loop through table and rehash all values
           for(int i = 0; i < length; i++){
                Student* add  = oldTable[i];
@@ -226,6 +233,7 @@ void addStudent(Student *s, Student** &list, int &length){
           }
           delete oldTable;
      }
+     return 0;
 }
 //Print out the students
 void printStudents(int length, Student** list){
