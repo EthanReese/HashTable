@@ -218,15 +218,16 @@ int addStudent(Student *s, Student** &list, int &length){
                list[i] = NULL;
           }
           //Loop through table and rehash all values
-          for(int i = 0; i < length; i++){
-               Student* add  = oldTable[i];
-               
+          for(int i = 0; i < length/2; i++){
+               Student* add  = oldTable[i]; 
                //If there is a student or a chain loop through and add
                while(add != NULL){
                     Student* student = add;
-                    add = add->next;
-                    student->next = NULL;
-                    addStudent(student, list, length);
+                    if(add != NULL){
+                         add = add->next;
+                         student->next = NULL;
+                         addStudent(student, list, length);
+                    }
                }
           }
           delete oldTable;
