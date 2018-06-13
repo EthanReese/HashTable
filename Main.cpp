@@ -212,13 +212,14 @@ int addStudent(Student *s, Student** &list, int &length){
      //If the number of collisions exceeds the given max then the table size needs to be doubled
      if(collisions > 3){
           Student** oldTable = list;
+          int oldLength = length;
           length *= 2;
           list = new Student*[length];
           for(int i = 0; i < length; i++){
                list[i] = NULL;
           }
           //Loop through table and rehash all values
-          for(int i = 0; i < length/2; i++){
+          for(int i = 0; i < oldLength; i++){
                Student* add  = oldTable[i]; 
                //If there is a student or a chain loop through and add
                while(add != NULL){
